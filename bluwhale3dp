@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BLUWHALE 3D Prints</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=CAD"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<script>
+  (function(){
+    emailjs.init('lHQCPzAh6gl21ypt1');
+  })();
+</script>
+
+<style>
+body{font-family:'Poppins',sans-serif;background:#f6f8fb;color:#1f2937;margin:0}
+h1,h2,h3{font-family:'Lora',serif}
+.nav{backdrop-filter:blur(10px)}
+.btn{background:#0f3d6e;color:white;padding:12px 20px;border-radius:10px;font-weight:600;transition:.3s;border:none;cursor:pointer}
+.btn:hover{background:#0b2e52}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.card{background:white;border-radius:16px;box-shadow:0 15px 35px rgba(0,0,0,0.08);transition:.3s}
+.card:hover{transform:translateY(-8px)}
+.page{display:none}
+.page.active{display:block}
+.dropdown:hover .dropdown-menu{display:block}
+#cart-count{position:absolute;top:-8px;right:-8px;font-size:12px}
+.cart-item-remove{cursor:pointer;color:red;font-weight:bold;margin-left:8px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
+.modal.active{display:flex}
+.modal-content{background:white;padding:40px;border-radius:16px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-weight:600;margin-bottom:8px;color:#1f2937}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:'Poppins',sans-serif;font-size:14px;box-sizing:border-box}
+.form-group textarea{resize:vertical;min-height:100px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.form-row{grid-template-columns:1fr}}
+.success-message{color:#10b981;font-weight:bold;padding:10px;background:#d1fae5;border-radius:5px}
+.error-message{color:#ef4444;font-weight:bold;padding:10px;background:#fee2e2;border-radius:5px}
+.quote-box{background:linear-gradient(135deg,#0f3d6e,#1a5a8a);color:white;padding:20px;border-radius:10px;margin:15px 0}
+.quote-row{display:flex;justify-content:space-between;padding:8px 0}
+</style>
+</head>
+
+<body>
+
+<header class="nav bg-white/90 sticky top-0 z-50 shadow-md">
+  <div class="max-w-7xl mx-auto flex justify-between items-center p-5">
+    <h1 class="text-3xl font-bold text-blue-900 cursor-pointer" onclick="showPage('home')">🐋 BLUWHALE</h1>
+    <nav class="flex gap-8 text-gray-700 font-medium items-center">
+      <div class="relative dropdown">
+        <a href="#" class="hover:text-blue-900 transition">Shop ⬇</a>
+        <div class="dropdown-menu absolute hidden bg-white shadow-lg rounded-md mt-4 py-2 w-56">
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="featured">Featured Items</a>
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="all">All Items</a>
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="fidgets">Fidgets</a>
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="keychains">Keychains</a>
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="headphone-stands">Headphone Stands</a>
+          <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 shop-dropdown-item" data-category="business-cards">Business Cards</a>
+        </div>
+      </div>
+      <a href="#" onclick="showPage('custom'); return false;" class="hover:text-blue-900 transition">Custom</a>
+      <a href="#" onclick="showPage('contact'); return false;" class="hover:text-blue-900 transition">Contact</a>
+      <div id="cart-hover" class="relative ml-4 cursor-pointer">
+        <div class="flex items-center gap-2 hover:text-blue-900 transition" onclick="toggleCartDropdown()">
+          <span style="font-size:24px">🛒</span>
+          <span id="cart-count" class="absolute bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
+        </div>
+        <div id="cart-preview" class="absolute right-0 mt-2 w-80 bg-white shadow-lg rounded-lg p-4 hidden z-50" style="top:100%">
+          <h3 class="font-bold text-lg mb-4 pb-2 border-b">Shopping Cart</h3>
+          <div id="cart-preview-items" class="max-h-48 overflow-y-auto mb-4"></div>
+          <div class="pt-2 border-t">
+            <div class="flex justify-between items-center mb-4">
+              <span class="font-bold text-lg">Total:</span>
+              <span class="font-bold text-lg" id="cart-preview-total">CA$0.00</span>
+            </div>
+            <button onclick="openQuoteModal()" class="bg-blue-900 text-white w-full py-2 px-3 rounded hover:bg-blue-800 transition font-semibold mb-2">Get Quote</button>
+            <button onclick="proceedToCheckout()" class="bg-yellow-400 text-gray-800 w-full py-2 px-3 rounded hover:bg-yellow-300 transition font-semibold">Checkout</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section id="home" class="page active bg-[#0f3d6e] text-white text-center py-32">
+  <h2 class="text-5xl md:text-6xl font-bold mb-4">Premium 3D Printing</h2>
+  <p class="text-xl md:text-2xl opacity-90 mb-8">Clean • Custom • Professional</p>
+  <a href="#" onclick="showPage('shop'); return false;" class="bg-white text-[#0f3d6e] px-8 py-4 rounded-xl font-bold shadow hover:shadow-lg transition inline-block">Browse Shop</a>
+</section>
+
+<section id="shop" class="page py-20 px-4">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-4xl text-center mb-12 font-semibold">Shop</h2>
+    <div id="products-grid" class="grid md:grid-cols-3 sm:grid-cols-2 gap-12 max-w-6xl mx-auto"></div>
+  </div>
+</section>
+
+<section id="custom" class="page py-20 px-4">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-4xl text-center mb-12 font-semibold">Custom 3D Print Quote Calculator</h2>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Upload Section -->
+      <div class="bg-gray-100 rounded-2xl shadow-lg p-8">
+        <h3 class="text-2xl font-semibold mb-4">Upload STL File</h3>
+        <p class="text-gray-600 mb-6">Upload your STL file and we'll instantly calculate costs</p>
+        <input type="file" id="stl" accept=".stl,.STL" class="mb-4" />
+        <p id="upload-status" class="mt-4 text-green-600 font-medium"></p>
+      </div>
+
+      <!-- Quote Calculator Section -->
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h3 class="text-2xl font-semibold mb-4">Quote Details</h3>
+        
+        <div class="form-group">
+          <label for="material-type">Material Type *</label>
+          <select id="material-type" onchange="updateQuote()">
+            <option value="">Select material...</option>
+            <option value="PLA">PLA (CA$20/kg)</option>
+            <option value="PETG">PETG (CA$25/kg)</option>
+            <option value="ABS">ABS (CA$30/kg)</option>
+            <option value="TPU">TPU (CA$40/kg)</option>
+            <option value="Nylon">Nylon (CA$50/kg)</option>
+            <option value="Resin">Resin (CA$80/kg)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="infill">Infill Density (%)</label>
+          <input type="number" id="infill" value="20" min="10" max="100" step="10" onchange="updateQuote()" />
+        </div>
+
+        <div class="form-group">
+          <label for="print-quality">Print Quality</label>
+          <select id="print-quality" onchange="updateQuote()">
+            <option value="standard">Standard (CA$5.00)</option>
+            <option value="high">High Quality (CA$15.00)</option>
+            <option value="ultra">Ultra High (CA$25.00)</option>
+          </select>
+        </div>
+
+        <div class="quote-box">
+          <div class="quote-row">
+            <span>File Weight:</span>
+            <span id="file-weight-display">0.00g</span>
+          </div>
+          <div class="quote-row">
+            <span>Filament Usage:</span>
+            <span id="filament-usage-display">0.00g</span>
+          </div>
+          <div class="quote-row">
+            <span>Material Cost:</span>
+            <span id="material-cost">CA$0.00</span>
+          </div>
+          <div class="quote-row">
+            <span>Quality Surcharge:</span>
+            <span id="quality-cost">CA$0.00</span>
+          </div>
+          <div class="quote-row">
+            <span>Base Printing:</span>
+            <span id="base-cost">CA$10.00</span>
+          </div>
+          <hr class="my-3 opacity-50" />
+          <div class="quote-row" style="font-size:1.3em;font-weight:bold;">
+            <span>Total Estimate:</span>
+            <span id="total-estimate">CA$10.00</span>
+          </div>
+        </div>
+
+        <button onclick="requestCustomQuote()" class="btn w-full mt-6">Request Custom Quote</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="page py-20 px-4">
+  <div class="max-w-4xl mx-auto text-center bg-white rounded-2xl shadow-lg p-12">
+    <h2 class="text-3xl mb-4 font-semibold">Contact Us</h2>
+    <p class="text-gray-700 mb-2 font-medium">Phone: 240-791-8534</p>
+    <p class="text-gray-700 mb-2 font-medium">Email: <a href="mailto:bluwhale3dp@gmail.com" class="text-blue-700 hover:underline">bluwhale3dp@gmail.com</a></p>
+  </div>
+</section>
+
+<section id="checkout" class="page py-20 px-4">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-12">
+    <h2 class="text-3xl text-center mb-12 font-semibold">Checkout</h2>
+    <div class="bg-gray-50 p-4 rounded-lg mb-6 border-l-4 border-blue-900">
+      <h3 class="font-bold text-lg mb-3">Order Summary</h3>
+      <div id="checkout-items" class="space-y-2 mb-3"></div>
+      <div class="border-t pt-3 flex justify-between">
+        <span class="font-bold text-lg">Total:</span>
+        <span id="checkout-total" class="font-bold text-lg">CA$0.00</span>
+      </div>
+    </div>
+    <div id="paypal" class="mt-8"></div>
+    <button onclick="showPage('shop')" class="mt-4 w-full bg-gray-400 text-white py-2 px-4 rounded hover:bg-gray-500 transition font-semibold">Continue Shopping</button>
+  </div>
+</section>
+
+<!-- Quote Modal for Shop Items -->
+<div id="quoteModal" class="modal">
+  <div class="modal-content">
+    <h2 class="text-3xl font-bold mb-6 text-blue-900">Request a Quote</h2>
+    
+    <div class="bg-gray-50 p-4 rounded-lg mb-6 border-l-4 border-blue-900">
+      <h3 class="font-bold text-lg mb-3">Order Summary</h3>
+      <div id="quote-items-summary" class="space-y-2 mb-3"></div>
+      <div class="border-t pt-3 flex justify-between">
+        <span class="font-bold">Subtotal:</span>
+        <span id="quote-subtotal" class="font-bold">CA$0.00</span>
+      </div>
+    </div>
+
+    <form id="quoteForm">
+      <h3 class="font-bold text-lg mb-4 mt-6">Your Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="first_name">First Name *</label>
+          <input type="text" id="first_name" name="first_name" required />
+        </div>
+        <div class="form-group">
+          <label for="last_name">Last Name *</label>
+          <input type="text" id="last_name" name="last_name" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number *</label>
+        <input type="tel" id="phone" name="phone" required />
+      </div>
+
+      <h3 class="font-bold text-lg mb-4 mt-6">Shipping Address</h3>
+
+      <div class="form-group">
+        <label for="address">Street Address *</label>
+        <input type="text" id="address" name="address" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">City *</label>
+          <input type="text" id="city" name="city" required />
+        </div>
+        <div class="form-group">
+          <label for="province">Province/State *</label>
+          <input type="text" id="province" name="province" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="postal">Postal Code *</label>
+          <input type="text" id="postal" name="postal" required />
+        </div>
+        <div class="form-group">
+          <label for="country">Country *</label>
+          <select id="country" name="country" required>
+            <option value="">Select Country</option>
+            <option value="Canada">Canada</option>
+            <option value="United States">United States</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Australia">Australia</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <h3 class="font-bold text-lg mb-4 mt-6">Additional Details</h3>
+
+      <div class="form-group">
+        <label for="material">Preferred Material</label>
+        <select id="material" name="material">
+          <option value="Not specified">Select material...</option>
+          <option value="PLA (Standard)">PLA (Standard)</option>
+          <option value="PETG (Durable)">PETG (Durable)</option>
+          <option value="ABS (Strong)">ABS (Strong)</option>
+          <option value="TPU (Flexible)">TPU (Flexible)</option>
+          <option value="Nylon (Premium)">Nylon (Premium)</option>
+          <option value="Resin (High Detail)">Resin (High Detail)</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="color">Preferred Color</label>
+        <input type="text" id="color" name="color" placeholder="e.g., Blue, Black" />
+      </div>
+
+      <div class="form-group">
+        <label for="urgency">Timeline *</label>
+        <select id="urgency" name="urgency" required>
+          <option value="">Select timeline...</option>
+          <option value="Standard (2-4 weeks)">Standard (2-4 weeks)</option>
+          <option value="Expedited (1-2 weeks)">Expedited (1-2 weeks)</option>
+          <option value="Rush (3-5 business days)">Rush (3-5 business days)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Special Requests</label>
+        <textarea id="notes" name="notes" placeholder="Any additional information..."></textarea>
+      </div>
+
+      <div id="submitStatus" class="mb-4"></div>
+
+      <div class="flex gap-4 mt-8">
+        <button type="button" onclick="closeQuoteModal()" class="flex-1 bg-gray-400 text-white py-3 px-4 rounded-lg hover:bg-gray-500 transition font-semibold">Cancel</button>
+        <button type="button" onclick="handleSubmit()" id="submitBtn" class="flex-1 btn">Send Quote Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Quote Modal -->
+<div id="customQuoteModal" class="modal">
+  <div class="modal-content">
+    <h2 class="text-3xl font-bold mb-6 text-blue-900">Custom Print Quote</h2>
+    
+    <div class="quote-box">
+      <div class="quote-row">
+        <span>File Weight:</span>
+        <span id="modal-file-weight">0.00g</span>
+      </div>
+      <div class="quote-row">
+        <span>Filament Used:</span>
+        <span id="modal-filament-usage">0.00g</span>
+      </div>
+      <div class="quote-row">
+        <span>Estimated Cost:</span>
+        <span id="custom-quote-total">CA$10.00</span>
+      </div>
+    </div>
+
+    <form id="customQuoteForm">
+      <h3 class="font-bold text-lg mb-4">Your Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cust_first_name">First Name *</label>
+          <input type="text" id="cust_first_name" name="first_name" required />
+        </div>
+        <div class="form-group">
+          <label for="cust_last_name">Last Name *</label>
+          <input type="text" id="cust_last_name" name="last_name" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="cust_email">Email Address *</label>
+        <input type="email" id="cust_email" name="email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="cust_phone">Phone Number *</label>
+        <input type="tel" id="cust_phone" name="phone" required />
+      </div>
+
+      <div class="form-group">
+        <label for="cust_notes">Special Requests or Notes</label>
+        <textarea id="cust_notes" name="notes" placeholder="Any additional information..."></textarea>
+      </div>
+
+      <div id="customSubmitStatus" class="mb-4"></div>
+
+      <div class="flex gap-4 mt-8">
+        <button type="button" onclick="closeCustomQuoteModal()" class="flex-1 bg-gray-400 text-white py-3 px-4 rounded-lg hover:bg-gray-500 transition font-semibold">Cancel</button>
+        <button type="button" onclick="handleCustomSubmit()" id="customSubmitBtn" class="flex-1 btn">Send Quote Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer class="bg-[#0f3d6e] text-white text-center py-12 mt-20">
+  <p class="mb-2 font-semibold text-lg">BLUWHALE 3D Prints</p>
+  <p class="text-sm opacity-80">Premium custom 3D printing service</p>
+</footer>
+
+<script>
+const products = [
+  { name: '3D Printed Headphone Stand', category: 'headphone-stands', price: 89.99 },
+  { name: '3D Printed Headphone Stand (Blue)', category: 'headphone-stands', price: 89.99 },
+  { name: 'Keychains', category: 'keychains', price: 34.95 },
+  { name: '3D Printed Business Card', category: 'business-cards', price: 19.07 },
+  { name: 'Scrub Diddy', category: 'fidgets', price: 31.40 },
+  { name: 'Articulated Pencil Holder', category: 'fidgets', price: 50.30 },
+  { name: 'Customizable Letters & Numbers', category: 'fidgets', price: 16.87 },
+  { name: 'Transforming Chess Piece', category: 'fidgets', price: 65.99 },
+  { name: 'T13 Multi Color Blue & Purple', category: 'fidgets', price: 19.07 }
+];
+
+let cart = [];
+let total = 0;
+let customQuoteTotal = 0;
+let fileWeight = 0;
+
+const materialPrices = {
+  'PLA': 20,
+  'PETG': 25,
+  'ABS': 30,
+  'TPU': 40,
+  'Nylon': 50,
+  'Resin': 80
+};
+
+const qualityCosts = {
+  'standard': 5.00,
+  'high': 15.00,
+  'ultra': 25.00
+};
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  if (page) {
+    page.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  if (pageId === 'shop') renderProducts('all');
+  if (pageId === 'checkout') initPayPal();
+}
+
+function renderProducts(category = 'all') {
+  const container = document.getElementById('products-grid');
+  container.innerHTML = '';
+  let filtered = category === 'all' ? products : products.filter(p => p.category === category);
+
+  filtered.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card p-6 flex flex-col justify-between';
+    card.innerHTML = `
+      <div class='h-48 bg-gradient-to-br from-blue-200 to-blue-100 rounded mb-4 flex items-center justify-center text-blue-400 text-2xl font-medium'>3D Print</div>
+      <h3 class='text-lg font-semibold mb-2'>${p.name}</h3>
+      <p class='text-gray-500 mb-4 font-semibold'>CA$${p.price.toFixed(2)}</p>
+      <button class='btn w-full' onclick='addToCart(${i})'>Add to Cart</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function addToCart(i) {
+  cart.push(products[i]);
+  total += products[i].price;
+  renderCart();
+}
+
+function removeFromCart(i) {
+  total -= cart[i].price;
+  cart.splice(i, 1);
+  renderCart();
+}
+
+function renderCart() {
+  let html = '';
+  cart.forEach((p, i) => {
+    html += `<div class='flex justify-between items-center py-2 border-b'><span class='font-medium text-sm'>${p.name}</span><div class='flex items-center'><span>CA$${p.price.toFixed(2)}</span><span class='cart-item-remove' onclick='removeFromCart(${i})'>✕</span></div></div>`;
+  });
+  
+  if (cart.length === 0) {
+    html = '<p class="text-gray-500 text-center py-4">Your cart is empty</p>';
+  }
+
+  document.getElementById('cart-preview-items').innerHTML = html;
+  document.getElementById('cart-preview-total').innerText = 'CA$' + total.toFixed(2);
+  document.getElementById('cart-count').innerText = cart.length;
+}
+
+function toggleCartDropdown() {
+  document.getElementById('cart-preview').classList.toggle('hidden');
+}
+
+// Custom Quote Functions
+function calculateFilamentUsage(weight, infill) {
+  // Calculate actual filament used based on infill and weight
+  // Infill affects volume, so we estimate: actual_weight = (weight * infill) / 100
+  const estimatedFilament = (weight * infill) / 100;
+  return Math.max(estimatedFilament, weight * 0.3); // Minimum 30% of original weight for structure
+}
+
+function updateQuote() {
+  const material = document.getElementById('material-type').value;
+  const quality = document.getElementById('print-quality').value;
+  const infill = parseInt(document.getElementById('infill').value) || 20;
+
+  let materialCost = 0;
+  let qualityCost = 0;
+  let filamentUsage = 0;
+
+  if (fileWeight > 0) {
+    filamentUsage = calculateFilamentUsage(fileWeight, infill);
+    
+    if (material && materialPrices[material]) {
+      // Convert grams to kg and multiply by price per kg
+      materialCost = (filamentUsage / 1000) * materialPrices[material];
+    }
+  }
+
+  if (quality && qualityCosts[quality]) {
+    qualityCost = qualityCosts[quality];
+  }
+
+  const baseCost = 10.00;
+  customQuoteTotal = materialCost + qualityCost + baseCost;
+
+  // Update display
+  document.getElementById('file-weight-display').innerText = fileWeight.toFixed(2) + 'g';
+  document.getElementById('filament-usage-display').innerText = filamentUsage.toFixed(2) + 'g';
+  document.getElementById('material-cost').innerText = 'CA$' + materialCost.toFixed(2);
+  document.getElementById('quality-cost').innerText = 'CA$' + qualityCost.toFixed(2);
+  document.getElementById('total-estimate').innerText = 'CA$' + customQuoteTotal.toFixed(2);
+  document.getElementById('custom-quote-total').innerText = 'CA$' + customQuoteTotal.toFixed(2);
+  
+  // Update modal displays
+  document.getElementById('modal-file-weight').innerText = fileWeight.toFixed(2) + 'g';
+  document.getElementById('modal-filament-usage').innerText = filamentUsage.toFixed(2) + 'g';
+}
+
+function requestCustomQuote() {
+  if (fileWeight <= 0) {
+    alert('Please upload a valid STL file');
+    return;
+  }
+  
+  const material = document.getElementById('material-type').value;
+  if (!material) {
+    alert('Please select a material');
+    return;
+  }
+
+  document.getElementById('customQuoteModal').classList.add('active');
+}
+
+function closeCustomQuoteModal() {
+  document.getElementById('customQuoteModal').classList.remove('active');
+}
+
+function handleCustomSubmit() {
+  const submitBtn = document.getElementById('customSubmitBtn');
+  const statusDiv = document.getElementById('customSubmitStatus');
+  
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Sending...';
+  statusDiv.innerHTML = '';
+
+  const material = document.getElementById('material-type').value;
+  const quality = document.getElementById('print-quality').value;
+  const infill = document.getElementById('infill').value;
+  const filamentUsage = calculateFilamentUsage(fileWeight, parseInt(infill) || 20);
+
+  const templateParams = {
+    first_name: document.getElementById('cust_first_name').value,
+    last_name: document.getElementById('cust_last_name').value,
+    email: document.getElementById('cust_email').value,
+    phone: document.getElementById('cust_phone').value,
+    file_weight: fileWeight.toFixed(2) + 'g',
+    filament_usage: filamentUsage.toFixed(2) + 'g',
+    material: material,
+    quality: quality,
+    infill: infill + '%',
+    notes: document.getElementById('cust_notes').value || 'None',
+    estimated_cost: 'CA$' + customQuoteTotal.toFixed(2),
+    items_list: 'Custom 3D Print\n- File Weight: ' + fileWeight.toFixed(2) + 'g\n- Filament Usage: ' + filamentUsage.toFixed(2) + 'g\n- Material: ' + material + '\n- Quality: ' + quality + '\n- Infill: ' + infill + '%',
+    total: 'CA$' + customQuoteTotal.toFixed(2)
+  };
+
+  emailjs.send('service_i9mfhqj', 'template_f9mo94c', templateParams).then(
+    function(response) {
+      statusDiv.innerHTML = '<p class="success-message">✓ Quote sent successfully!</p>';
+      setTimeout(() => {
+        document.getElementById('customQuoteForm').reset();
+        closeCustomQuoteModal();
+        fileWeight = 0;
+        document.getElementById('material-type').value = '';
+        document.getElementById('stl').value = '';
+        document.getElementById('upload-status').innerText = '';
+        updateQuote();
+      }, 2000);
+    },
+    function(error) {
+      statusDiv.innerHTML = '<p class="error-message">✗ Error sending quote.</p>';
+    }
+  ).finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Send Quote Request';
+  });
+}
+
+// STL File Upload
+document.getElementById('stl').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const arrayBuffer = event.target.result;
+    fileWeight = estimateSTLWeight(arrayBuffer);
+    
+    document.getElementById('upload-status').innerText = `✓ File loaded: ${file.name} (~${fileWeight.toFixed(2)}g)`;
+    updateQuote();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function estimateSTLWeight(arrayBuffer) {
+  const view = new Float32Array(arrayBuffer);
+  let volume = 0;
+  
+  for (let i = 84; i < view.length; i += 12) {
+    const x1 = view[i];
+    const y1 = view[i + 1];
+    const z1 = view[i + 2];
+    
+    if (i + 11 < view.length) {
+      const x2 = view[i + 3];
+      const y2 = view[i + 4];
+      const z2 = view[i + 5];
+      
+      const x3 = view[i + 6];
+      const y3 = view[i + 7];
+      const z3 = view[i + 8];
+      
+      volume += Math.abs((x1 * (y2 * z3 - y3 * z2) - y1 * (x2 * z3 - x3 * z2) + z1 * (x2 * y3 - x3 * y2)) / 6);
+    }
+  }
+  
+  const densityPLA = 1.24;
+  const weight = (volume / 1000) * densityPLA;
+  
+  return Math.max(weight, 5);
+}
+
+function proceedToCheckout() {
+  if (cart.length === 0) {
+    alert('Your cart is empty.');
+    return;
+  }
+  
+  let summaryHtml = '';
+  const itemCount = {};
+  cart.forEach(p => {
+    itemCount[p.name] = (itemCount[p.name] || 0) + 1;
+  });
+  
+  for (const [name, qty] of Object.entries(itemCount)) {
+    const product = products.find(p => p.name === name);
+    summaryHtml += `<div class='flex justify-between'><span>${qty}x ${name}</span><span>CA$${(product.price * qty).toFixed(2)}</span></div>`;
+  }
+  
+  document.getElementById('checkout-items').innerHTML = summaryHtml;
+  document.getElementById('checkout-total').innerText = 'CA$' + total.toFixed(2);
+  
+  showPage('checkout');
+}
+
+function initPayPal() {
+  const paypalContainer = document.getElementById('paypal');
+  paypalContainer.innerHTML = '';
+  
+  try {
+    if (typeof paypal !== 'undefined') {
+      paypal.Buttons({
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: total.toFixed(2),
+                currency_code: 'CAD'
+              }
+            }]
+          });
+        },
+        onApprove: (data, actions) => {
+          return actions.order.capture().then(() => {
+            alert('Payment successful! Order ID: ' + data.orderID);
+            cart = [];
+            total = 0;
+            renderCart();
+            showPage('shop');
+          });
+        },
+        onError: (err) => {
+          console.error('PayPal Error:', err);
+          alert('Payment failed. Please try again.');
+        }
+      }).render('#paypal');
+    }
+  } catch (err) {
+    console.log('PayPal error:', err);
+  }
+}
+
+function openQuoteModal() {
+  if (cart.length === 0) {
+    alert('Your cart is empty. Add items to get a quote.');
+    return;
+  }
+  
+  let summaryHtml = '';
+  const itemCount = {};
+  cart.forEach(p => {
+    itemCount[p.name] = (itemCount[p.name] || 0) + 1;
+  });
+  
+  for (const [name, qty] of Object.entries(itemCount)) {
+    const product = products.find(p => p.name === name);
+    summaryHtml += `<div class='flex justify-between'><span>${qty}x ${name}</span><span>CA$${(product.price * qty).toFixed(2)}</span></div>`;
+  }
+  
+  document.getElementById('quote-items-summary').innerHTML = summaryHtml;
+  document.getElementById('quote-subtotal').innerText = 'CA$' + total.toFixed(2);
+  document.getElementById('quoteModal').classList.add('active');
+}
+
+function closeQuoteModal() {
+  document.getElementById('quoteModal').classList.remove('active');
+}
+
+function handleSubmit() {
+  const submitBtn = document.getElementById('submitBtn');
+  const statusDiv = document.getElementById('submitStatus');
+  
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Sending...';
+  statusDiv.innerHTML = '';
+  
+  const itemCount = {};
+  cart.forEach(p => {
+    itemCount[p.name] = (itemCount[p.name] || 0) + 1;
+  });
+  
+  let itemsList = '';
+  for (const [name, qty] of Object.entries(itemCount)) {
+    const product = products.find(p => p.name === name);
+    itemsList += `${qty}x ${name} @ CA$${product.price.toFixed(2)} = CA$${(product.price * qty).toFixed(2)}\n`;
+  }
+
+  const templateParams = {
+    first_name: document.getElementById('first_name').value,
+    last_name: document.getElementById('last_name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    address: document.getElementById('address').value,
+    city: document.getElementById('city').value,
+    province: document.getElementById('province').value,
+    postal: document.getElementById('postal').value,
+    country: document.getElementById('country').value,
+    material: document.getElementById('material').value,
+    color: document.getElementById('color').value || 'Not specified',
+    urgency: document.getElementById('urgency').value,
+    notes: document.getElementById('notes').value || 'None',
+    items_list: itemsList,
+    total: 'CA$' + total.toFixed(2)
+  };
+
+  emailjs.send('service_i9mfhqj', 'template_f9mo94c', templateParams).then(
+    function(response) {
+      statusDiv.innerHTML = '<p class="success-message">✓ Quote sent successfully!</p>';
+      setTimeout(() => {
+        document.getElementById('quoteForm').reset();
+        closeQuoteModal();
+        cart = [];
+        total = 0;
+        renderCart();
+      }, 2000);
+    },
+    function(error) {
+      statusDiv.innerHTML = '<p class="error-message">✗ Error sending quote.</p>';
+    }
+  ).finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Send Quote Request';
+  });
+}
+
+renderProducts();
+
+document.querySelectorAll('.shop-dropdown-item').forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    showPage('shop');
+    renderProducts(e.currentTarget.dataset.category);
+  });
+});
+
+document.getElementById('quoteModal').addEventListener('click', (e) => {
+  if (e.target.id === 'quoteModal') closeQuoteModal();
+});
+
+document.getElementById('customQuoteModal').addEventListener('click', (e) => {
+  if (e.target.id === 'customQuoteModal') closeCustomQuoteModal();
+});
+
+// Initialize quote on page load
+updateQuote();
+</script>
+
+</body>
+</html
