@@ -1,0 +1,45 @@
+<section id="hero">
+    <h1>Expert 3D Prints. Precision. Speed. Delivered.</h1>
+    <p>Custom prototypes and production parts built to exact specifications.</p>
+    <div class="cta">
+        <a href="#get-a-quote" class="btn">Get a Quote</a>
+        <a href="#upload-your-file" class="btn">Upload Your File</a>
+    </div>
+</section>
+
+<style>
+.shop-dropdown {
+    position: relative;
+}
+.shop-dropdown-toggle {
+    cursor: pointer;
+}
+.shop-dropdown-menu {
+    display: none;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+.shop-dropdown.open .shop-dropdown-menu {
+    display: block;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const shopDropdown = document.querySelector('.shop-dropdown');
+    const toggle = shopDropdown.querySelector('.shop-dropdown-toggle');
+    toggle.addEventListener('click', function () {
+        shopDropdown.classList.toggle('open');
+    });
+});
+</script>
+
+<ul class="shop-dropdown">
+    <li class="shop-dropdown-toggle">Shop</li>
+    <ul class="shop-dropdown-menu">
+        <li><a href="/featured?category=featured">Featured Items</a></li>
+        <li><a href="/featured?category=3dprints">3D Prints</a></li>
+        <li><a href="/featured?category=prototypes">Prototypes</a></li>
+    </ul>
+</ul>
